@@ -17,6 +17,7 @@ const Home: NextPage = () => {
 
   return (
     <div className="home">
+      <img src='/lineByLine.png'></img>
       <button
         onClick={startGame}
       >Create a new lobby</button>
