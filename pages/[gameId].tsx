@@ -29,7 +29,7 @@ function Game() {
     const [status, setStatus] = useState('Setting up');
 
     useEffect(() => {
-        socket = io(process.env.BE_URL || 'http://localhost:3000');
+        socket = io('https://warm-river-49161.herokuapp.com');
         socket.on("connect", () => {
             setPlayerId(socket.id)
         });
