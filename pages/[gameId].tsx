@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Canvas from '../components/canvas'
 import { io } from "socket.io-client";
 import PlayerList from '../components/playerList';
+import Scoreboard from '../components/scoreboard';
 
 let socket: any;
 
@@ -157,6 +158,10 @@ function Game() {
                         maxLength={15}
                         />
                 </div>
+            }
+
+            {
+                game.state !== GameState.end ? '' : <Scoreboard players={ game.players }></Scoreboard>
             }
 
         </div>

@@ -22,7 +22,11 @@ a {
 canvas {
   border-radius: 10px;
   box-shadow: 2px 7px 25px -3px rgba(0,0,0,0.5);
-  border: solid 1px black ;
+  border: solid 2px black ;
+}
+
+canvas.enabled {
+  border: solid 2px rgb(89, 238, 89);
 }
 
 .draw-options {
@@ -88,6 +92,7 @@ input {
 }
 
 
+
 .lines-round {
   color: white;
   font-weight: 700;
@@ -140,7 +145,7 @@ input {
   margin: 5px 10px;
 }
 
-.options, .player-name-input {
+.options, .player-name-input, .scoreboard {
   color: white;
   font-size: 20px;
   position: fixed;
@@ -151,6 +156,19 @@ input {
   flex-direction: column;
   align-items: center;
   padding-top: 400px;
+}
+
+.score-card {
+  background: white;
+  color: black;
+  width: 500px;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  border: solid 1px rgba(0,0,0,.6);
+  display: flex;
+  justify-content: center;
+  text-transform: uppercase;
 }
 
 .option-category {

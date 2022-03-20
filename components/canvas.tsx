@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 
-function CanvasElement({ handleCanvasClick, handleMouseUp, handleMove, setCtx }: any) {
+function CanvasElement({ handleCanvasClick, handleMouseUp, handleMove, setCtx, disabled }: any) {
     const canvasRef: any = useRef(null)
 
     useEffect(() => {
@@ -12,6 +12,7 @@ function CanvasElement({ handleCanvasClick, handleMouseUp, handleMove, setCtx }:
 
     return (
         <canvas
+            className={ !disabled ? 'enabled' : '' }
             width={ 900 }
             height={ 600 }
             ref={ canvasRef }
@@ -105,6 +106,7 @@ function Canvas({ onLineAdded, disabled=false, lines=[], showPaintTools=false }:
     return (
         <div>
             <CanvasElement
+                disabled = { disabled }
                 handleCanvasClick = { handleCanvasClick }
                 handleMouseUp = { handleMouseUp }
                 handleMove = { handleMove }
@@ -118,7 +120,7 @@ function Canvas({ onLineAdded, disabled=false, lines=[], showPaintTools=false }:
                         className='pen-width'
                         style={{ fontWeight: lineWidth === i ? '900' : '300' }}
                         key={i}
-                        onClick={ () => { setLineWidth(i); console.log(lineWidth) } }>{i}</span>)
+                        onClick={ () => { setLineWidth(i) } }>{i}</span>)
                 }
             </div> : ''
             }           
