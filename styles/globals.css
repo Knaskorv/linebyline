@@ -51,11 +51,21 @@ canvas.enabled {
 
 .game-header {
   height: 80px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+
   width: 100%;
   padding: 20px;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+}
+
+.timer {
+  color: white;
+  font-size: 70px;
+  font-weight: 900;
+  display: flex;
+  justify-content: center;
 }
 
 .game-round {
@@ -66,6 +76,7 @@ canvas.enabled {
   -webkit-text-stroke-color: rgba(0,0,0, .8);
   text-transform: uppercase;
 }
+
 .game-status, .game-category {
   font-size: 20px;
   color: white;
@@ -75,6 +86,10 @@ canvas.enabled {
   text-transform: uppercase;
 }
 
+.game-status {
+  display: flex;
+  justify-content: end;
+}
 
 .game-category {
   text-align: right;
@@ -91,8 +106,6 @@ input {
     box-shadow: -2px 0px 11px 0px rgb(42 42 42 / 14%);
 }
 
-
-
 .lines-round {
   color: white;
   font-weight: 700;
@@ -100,23 +113,38 @@ input {
   text-transform: uppercase;
 }
 
+.game {
+  display: flex;
+  padding-top: 30px;
+  padding-right: 200px;;
+}
 
 .player-container {
   display: flex;
-  height: 100px;
+  flex-direction: column;
+  width: 200px;
+  margin-right: 10px;
 }
 
 .player {
+  background: rgb(255, 255, 255);
+  border-radius: 15px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  color: white;
-  padding: 10px;
+  color: black;
+  padding: 5px 10px;
   width: 200px;
+  margin-bottom: 10px;
+  border: solid rgb(238, 0, 218) 1px;
+  overflow: hidden;
+  box-shadow: 2px 7px 25px -3px rgba(0,0,0,0.5);
 }
 
 .player-name {
-  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -151,6 +179,9 @@ input {
   margin: 5px 10px;
 }
 
+
+
+
 .options, .player-name-input, .scoreboard {
   color: white;
   font-size: 20px;
@@ -162,6 +193,8 @@ input {
   flex-direction: column;
   align-items: center;
   padding-top: 400px;
+  top: 0;
+  bottom: 0;
 }
 
 .score-card {

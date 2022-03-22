@@ -6,7 +6,7 @@ const Home: NextPage = () => {
 
   async function startGame() {
     try {     
-      const response = await fetch('https://warm-river-49161.herokuapp.com');
+      const response = await fetch(`${process.env.BE_URL || 'http://localhost:3000'}/api/create`);
       const roomId = await response.text();
       router.push(`/${roomId}`)
     } catch(err) {

@@ -8,7 +8,7 @@ function CanvasElement({ handleCanvasClick, handleMouseUp, handleMove, setCtx, d
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         setCtx(ctx);
-    });
+    }, []);
 
     return (
         <canvas
@@ -24,18 +24,23 @@ function CanvasElement({ handleCanvasClick, handleMouseUp, handleMove, setCtx, d
     )
 }
 
-function Canvas({ onLineAdded, disabled=false, lines=[], showPaintTools=false }: any) {
+function Canvas({ socket, disabled }: any) {
     let startX = -1;
     let startY = -1;
     let draw = false;
-    
+
     const [ctx, setCtx] = useState(null);
+    const [lines, setLines] = useState([]);
     const [lineWidth, setLineWidth] = useState(3);
 
     useEffect(() => {
         drawLines();
     }, [ctx, lines])
-
+    
+    useEffect(() => {
+        socket?.on('lines', setLines);
+    }, [socket])
+    
     const drawLine = (line: any) => {
         if (!ctx) return;
         const { x1, x2, y1, y2, w } = line;
@@ -74,21 +79,28 @@ function Canvas({ onLineAdded, disabled=false, lines=[], showPaintTools=false }:
         draw = true;
     }
 
+    function onLineAdded(line: any) {
+        socket.emit('draw-line', line)
+    }
+    
     function handleMouseUp(evt: any) {
         if (disabled) return;
         if (startX < 0) return;
+        console.log('MOUSE UP')
         var rect = ctx.canvas.getBoundingClientRect();
         const x2 = evt.clientX - rect.left
         const y2 = evt.clientY - rect.top
 
+        console.log('Line', { x1: startX, y1: startY, x2, y2, w: lineWidth })
+
         if (Math.abs(startX - x2) > 2 || Math.abs(startY - y2) > 2) {
+            
             onLineAdded({ x1: startX, y1: startY, x2, y2, w: lineWidth })
             
             startX = -1;
             startY = -1;
         }
 
-        
         draw = false;
         drawLines();
     }
@@ -113,7 +125,7 @@ function Canvas({ onLineAdded, disabled=false, lines=[], showPaintTools=false }:
                 setCtx={ setCtx }
             >
             </CanvasElement>
-            { showPaintTools ? 
+            { !disabled ? 
             <div className='draw-options'>
                 {
                     [1, 2, 3, 4, 5].map(i => <span

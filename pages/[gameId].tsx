@@ -4,74 +4,75 @@ import Canvas from '../components/canvas'
 import { io } from "socket.io-client";
 import PlayerList from '../components/playerList';
 import Scoreboard from '../components/scoreboard';
+import NameInput from '../components/enterName';
+import OptionSelect from '../components/optionSelect';
+import GameHeader from '../components/gameHeader';
+
+//"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
 
 let socket: any;
 
 enum GameState {
-    idle = 'idle',
-    ready = 'ready',
-    choose = 'choose',
-    drawing = 'draw',
-    guessing = 'guess',
-    end = 'end',
+    init = 'INIT',
+    ready = 'READY',
+    target = 'TARGET',
+    draw = 'DRAW',
+    guess = 'GUESS',
+    end = 'END'
 }
 
-function Game() {
+function Room() {
     const router = useRouter()
     const { gameId } = router.query
 
-    const [player, setPlayer] = useState(false);
-    const [disabled, setDisabled] = useState(false);
-    const [game, setGame] = useState({});
-    const [playerId, setPlayerId] = useState();
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [options, setOptions] = useState([]);
-    const [status, setStatus] = useState('Setting up');
+    const [gameInfo, setGameInfo] = useState(null);
+    const [players, setPlayers] = useState([]);
+    const [state, setState] = useState('INIT');
+    
+    const [player, setPlayer] = useState(null);
+    const [settings, setSettings] = useState(null);
+    const [playerId, setPlayerId] = useState(null);
 
     useEffect(() => {
-        socket = io('https://warm-river-49161.herokuapp.com');
-        socket.on("connect", () => {
-            setPlayerId(socket.id)
-        });
-        socket.on("game-update", setGame);
-
-        socket.on("choose", setOptions);
+        socket = io(process.env.BE_URL || 'http://localhost:3000');
+        socket.on("connect", () => {  setPlayerId(socket.id)  });
+        
+        socket.on("players", setPlayers);
+        socket.on("game-info", setGameInfo);
+        socket.on("state", setState);
+    
         return () => { socket.close() }
     }, [])
 
     useEffect(() => {
         if (router.isReady) {
-            socket.emit('connected', gameId)
+            socket.emit('connected', gameId, (roomData) => {
+                if (!roomData) return router.push('/');
+                handleRoomData(roomData);
+            })
         }
     }, [router])
-
+   
     useEffect(() => {
-        if (!game) return router.push('/');
-        setGame(game)
-        const { state, players } = game;
+        setPlayer(players.find(player => player.id === playerId))
+    }, [players])
 
-        setPlayer(players?.find(player => player.id === playerId));
+    function handleRoomData(roomData) {
+        console.log('Got game data', roomData)
+        const { players, lines, state, round, currentCategory, helperText, timeRemaining, settings } = roomData;
+        
+        setGameInfo({ lines, state, round, currentCategory, helperText, timeRemaining });
+        
+        
+        setPlayers(players);
+        setSettings(settings);
+    }
 
-        if (state === 'guess') {
-            setDisabled(true);
+    function handleNameKeyDown(event: any) {
+        if (event.key === 'Enter') {
+            socket.emit('join', event.target.value)
+            event.target.value = '';
         }
-
-        switch(state) {
-            case GameState.idle: setStatus('Waiting for players'); break;
-            case GameState.ready: setStatus('Ready to start'); break;
-            case GameState.choose: setStatus('Player is choosing what to draw'); break;
-            case GameState.drawing: setStatus('Player is drawing'); break;
-            case GameState.guessing: setStatus('Players are guessing'); break;
-            case GameState.end: setStatus('Game over'); break;
-        }
-
-        setDisabled(state !== GameState.drawing)
-        setIsAdmin(game.admin === playerId);
-    }, [game])
-
-    function onLineAdded(line: any) {
-        setGame({ ...game, lines: [...game.lines, line] })
-        socket.emit('draw-line', line)
     }
 
     function handleGuessKeyDown(event: any) {
@@ -80,92 +81,35 @@ function Game() {
             event.target.value = '';
         }
     }
-    
-    function handleNameKeyDown(event: any) {
-        if (event.key === 'Enter') {
-            socket.emit('join', event.target.value)
-            event.target.value = '';
-        }
-    }
 
-    function chooseTarget(target) {
-        socket.emit('choose-target', target)
-        setOptions([]);
-    }
+    return !settings ? 'Connecting...' : (
+    <>
+    <div className='game-container'>
+        <GameHeader socket={ socket }></GameHeader>
 
-    return !game ? 'Loading' : (
-        <div className='game-container'>
-            <div className='game-header'>
-                <div>
-                    <div className='game-round'>Round {game?.round}/{game?.settings?.maxRounds}</div>
-                    <div className='lines-round'> { game?.settings?.maxLineRounds *  game?.settings?.linesRound - game?.lines?.length} Lines left </div>
-                </div>
-                {
-                game.state === GameState.ready && isAdmin ? <button onClick={() => socket.emit('start-game')}>Start</button> : ''
-                }
-
-                <div>
-                    <div className='game-status'>{ status }</div>
-                    { !game.currentCategory ? '' : <div className='game-category'>{ game.currentCategory }: <span className='helper-text'>{ game.helperText }</span> </div> }
-                </div>
-            </div>
-
-            <PlayerList
-                players={game.players}
-            ></PlayerList>
-
-            <Canvas
-                disabled={disabled || !player?.isDrawing}
-                onLineAdded={onLineAdded}
-                lines={game.lines}
-                showPaintTools={player?.isDrawing}
-            ></Canvas>
-
-            {
-                player?.isDrawing || !player? '' :
-                    <div>
-                        <input
-                            placeholder='Guess'
-                            onKeyDown={handleGuessKeyDown}
-                            disabled={player?.roundOver || player?.guessedCorrect  || player?.hasGuessed || player?.isDrawing || game?.state !== GameState.guessing}></input>
-                    </div>
-            }
-
-            { !options.length ? '' : <div className='options'>
-                <div>Select what to draw</div>
-                <div className='options-container'>
-            {
-
-                options.map(option => <button
-                    key={`${option.category}-${option.target}`}
-                    onClick={() => chooseTarget(option)}
-                > 
-                    <div>
-                        <div className='option-category'>{option.category}</div>
-                        <div className='option-target'>{option.target}</div>
-                    </div>
-                </button>)
-            }
-                </div>
-            </div>
-            }
-
-            {
-                player ? '' : <div className='player-name-input'>
-                    <div>Enter your name</div>
-                    <input
-                        onKeyDown={handleNameKeyDown}
-                        maxLength={15}
-                        />
-                </div>
-            }
-
-            {
-                game.state !== GameState.end ? '' : <Scoreboard players={ game.players }></Scoreboard>
-            }
-
+        <div className='game'>
+            <PlayerList players={players}></PlayerList>
+            <Canvas socket={ socket } disabled={ state !== GameState.draw || !player?.isDrawing } ></Canvas>
         </div>
+        
+        {
+            state !== 'GUESS' || player?.isDrawing || player?.hasGuessed ? '' :
+                <div>
+                    <input
+                        autoFocus
+                        placeholder='Guess'
+                        onKeyDown={handleGuessKeyDown}
+                        ></input>
+                </div>
+        }
+
+        {state === GameState.ready && player?.isAdmin ? <button onClick={() => socket.emit('start-game')}>Start</button> : ''}
+    </div>
+        { !player ? <NameInput handleNameKeyDown={handleNameKeyDown}></NameInput> : ''}
+        <OptionSelect socket={ socket }></OptionSelect>
+    </>
     )
+
 }
 
-export default Game
+export default Room
