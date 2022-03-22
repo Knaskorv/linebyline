@@ -62,7 +62,7 @@ canvas.enabled {
 
 .timer {
   color: white;
-  font-size: 70px;
+  font-size: 30px;
   font-weight: 900;
   display: flex;
   justify-content: center;

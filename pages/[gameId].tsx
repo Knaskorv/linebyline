@@ -35,6 +35,7 @@ function Room() {
 
     useEffect(() => {
         socket = io(process.env.BE_URL || 'https://warm-river-49161.herokuapp.com/');
+        // socket = io(process.env.BE_URL || 'http://localhost:3000');
         socket.on("connect", () => {  setPlayerId(socket.id)  });
         
         socket.on("players", setPlayers);

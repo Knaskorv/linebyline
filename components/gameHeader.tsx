@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 
+enum GameState {
+    init = 'INIT',
+    ready = 'READY',
+    target = 'TARGET',
+    draw = 'DRAW',
+    guess = 'GUESS',
+    end = 'END'
+}
+
 function GameHeader ({ socket }: any) {
 
     const [cta, setCta] = useState(null);
@@ -18,7 +27,26 @@ function GameHeader ({ socket }: any) {
     }, [socket])
 
     useEffect(() => {
-        setCta(timer || state);
+        switch(state) {
+            case GameState.init:
+                setCta('Waiting for players');
+                break; 
+            case GameState.ready:
+                setCta('Ready to start');
+                break; 
+            case GameState.target:
+                setCta('Choosing what to draw');
+                break; 
+            case GameState.draw:
+                setCta(`Drawing${timer ? ` (${timer})` : ''}`);
+                break; 
+            case GameState.guess:
+                setCta(`Guessing${timer ? ` (${timer})` : ''}`);
+                break; 
+            case GameState.end:
+                setCta('Game over');
+                break; 
+        }
     })
 
     return (
@@ -31,8 +59,8 @@ function GameHeader ({ socket }: any) {
             <div className="timer"> { cta } </div>
 
             <div>
-                <div className='game-status'>{ state }</div>
-                { !gameInfo?.currentCategory ? '' : <div className='game-category'>{ gameInfo.currentCategory }: <span className='helper-text'>{ gameInfo.helperText }</span> </div> }
+                <div className='game-status'>{ gameInfo?.currentCategory }</div>
+                <div className='game-category'><span className='helper-text'>{ gameInfo?.helperText }</span> </div>
             </div>
         </div>
     )
