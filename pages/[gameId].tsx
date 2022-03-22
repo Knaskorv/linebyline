@@ -93,7 +93,7 @@ function Room() {
         </div>
         
         {
-            state !== 'GUESS' || player?.isDrawing || player?.hasGuessed ? '' :
+            state !== 'GUESS' || player?.isDrawing || player?.hasGuessed || player?.guessedCorrect ? '' :
                 <div>
                     <input
                         autoFocus
