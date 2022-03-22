@@ -80,6 +80,7 @@ function Canvas({ socket, disabled }: any) {
     }
 
     function onLineAdded(line: any) {
+        setLines([...lines, line])
         socket.emit('draw-line', line)
     }
     
